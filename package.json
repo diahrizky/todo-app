@@ -1,6 +1,6 @@
 {
   "name": "todo-training-lab",
-  "version": "1.0.0",
+  "version": "1.0.1-day5.fd212b52",
   "private": true,
   "type": "module",
   "description": "Simple todo app for Docker and Compose training",
