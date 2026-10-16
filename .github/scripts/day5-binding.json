@@ -1,0 +1,141 @@
+{
+  "namespace": "temp-mpm",
+  "deployment": "diah-rizky-todo-app",
+  "service": "diah-rizky-todo-app",
+  "deployment_uid": "97a0b250-9f41-4b1e-ac42-12598c1d3ff9",
+  "service_uid": "533e54f4-d2cb-4841-a57b-6c3f8c510f2a",
+  "cluster_owner": "d25315a868bede07c76f1deec84d05c3",
+  "cluster_participant": "d3-2e4306a1",
+  "profile_id": "9d2f0503b3dd49bcbb6c6a90bb4dfe16",
+  "resource_prefix": "diah-rizky",
+  "fixture": {
+    "id": 2,
+    "title": "d3-persistent-d3-2e4306a1",
+    "completed": false
+  },
+  "service_selector": {
+    "app.kubernetes.io/name": "diah-rizky-todo-app",
+    "training.day3.owner": "d25315a868bede07c76f1deec84d05c3"
+  },
+  "app_template": {
+    "metadata": {
+      "labels": {
+        "training.course": "kubernetes-day-3",
+        "training.day3.owner": "d25315a868bede07c76f1deec84d05c3",
+        "training.day3.participant": "d3-2e4306a1",
+        "app.kubernetes.io/name": "diah-rizky-todo-app"
+      },
+      "annotations": {
+        "training.day4.config-release": "v2"
+      }
+    },
+    "spec": {
+      "securityContext": {
+        "runAsNonRoot": true,
+        "runAsUser": 1000,
+        "runAsGroup": 1000,
+        "seccompProfile": {
+          "type": "RuntimeDefault"
+        },
+        "fsGroup": 1000
+      },
+      "containers": [
+        {
+          "name": "app",
+          "image": "ghcr.io/diahrizky/todo-app@sha256:6700646eec8fd21ebddb689b2dc8de042c83c920dff40c8bf5b09e46f0cc0ba3",
+          "imagePullPolicy": "IfNotPresent",
+          "ports": [
+            {
+              "name": "http",
+              "containerPort": 8080
+            }
+          ],
+          "env": [
+            {
+              "name": "PORT",
+              "value": "8080"
+            },
+            {
+              "name": "STORAGE_MODE",
+              "value": "postgres"
+            },
+            {
+              "name": "DB_PASSWORD_FILE",
+              "value": "/run/secrets/postgres_password"
+            }
+          ],
+          "resources": {
+            "requests": {
+              "cpu": "25m",
+              "memory": "32Mi"
+            },
+            "limits": {
+              "cpu": "100m",
+              "memory": "96Mi"
+            }
+          },
+          "securityContext": {
+            "allowPrivilegeEscalation": false,
+            "readOnlyRootFilesystem": true,
+            "capabilities": {
+              "drop": [
+                "ALL"
+              ]
+            }
+          },
+          "volumeMounts": [
+            {
+              "name": "db-password",
+              "mountPath": "/run/secrets",
+              "readOnly": true
+            }
+          ],
+          "readinessProbe": {
+            "httpGet": {
+              "path": "/readyz",
+              "port": "http"
+            },
+            "periodSeconds": 5,
+            "timeoutSeconds": 3,
+            "failureThreshold": 3
+          },
+          "envFrom": [
+            {
+              "configMapRef": {
+                "name": "diah-rizky-todo-app-config-v2"
+              }
+            }
+          ],
+          "startupProbe": {
+            "httpGet": {
+              "path": "/healthz",
+              "port": "http"
+            },
+            "periodSeconds": 3,
+            "timeoutSeconds": 2,
+            "failureThreshold": 30
+          },
+          "livenessProbe": {
+            "httpGet": {
+              "path": "/healthz",
+              "port": "http"
+            },
+            "periodSeconds": 10,
+            "timeoutSeconds": 2,
+            "failureThreshold": 3
+          }
+        }
+      ],
+      "volumes": [
+        {
+          "name": "db-password",
+          "secret": {
+            "secretName": "diah-rizky-todo-db-credentials",
+            "defaultMode": 288
+          }
+        }
+      ],
+      "automountServiceAccountToken": false
+    }
+  }
+}
